@@ -113,3 +113,6 @@ body.picking #feed,body.picking #listbtn{opacity:0;pointer-events:none;transform
 #lbar button.on{border-color:var(--low);color:var(--low);box-shadow:0 0 10px #ffd16633}
 @media (min-width:701px){#lbar{display:none}}
 body.picking #lbar{opacity:0;pointer-events:none;transform:translateY(12px)}
+/* computers: lighter effects */
+.lowq #pick{backdrop-filter:none;-webkit-backdrop-filter:none;background:#0b0b10f8}
+.lowq #plane::after{display:none}
