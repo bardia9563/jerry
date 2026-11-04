@@ -1,0 +1,9 @@
+{
+  "name": "Jerry",
+  "short_name": "Jerry",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#050507",
+  "theme_color": "#050507",
+  "icons": [{ "src": "icon.png", "sizes": "192x192", "type": "image/png", "purpose": "any" }]
+}
