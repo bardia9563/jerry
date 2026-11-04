@@ -1,4 +1,5 @@
 """Jerry: scan -> AI value check -> Telegram alert."""
+import alertlog  # noqa: F401  (logs alerts for the live map)
 import deals
 import karrot
 import scanner
