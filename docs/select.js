@@ -7,8 +7,6 @@
   const quick = v => () => { const open = document.body.classList.contains('showfeed');
     if (open && window.FSORT_ON === v) { window.FSORT_ON = null; setSort('new'); return; }
     window.FSORT_ON = v; setSort(v); document.body.classList.add('showfeed'); };
-  mk('↑ ROI', quick('roi'), 'roi');
-  mk('↑ PROFIT', quick('profit'), 'profit');
   const btn = mk('☰ LIST', () => document.body.classList.toggle('showfeed')); btn.id = 'listbtn';
 
   const label = { free: 'FREE', deal: 'DEAL', lowprof: 'LOWPROF' };

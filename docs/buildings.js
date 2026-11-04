@@ -67,7 +67,7 @@
   })();
 
   function draw() {
-    const d = devicePixelRatio || 1;
+    const d = window.LOWQ ? 1 : (devicePixelRatio || 1);
     if (cv.width !== innerWidth * d) { cv.width = innerWidth * d; cv.height = innerHeight * d; lastKey = ''; }
     const S = C.map(el => { const r = el.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; });
     const key = S.flat().map(Math.round).join(',') + B.length;
@@ -85,6 +85,12 @@
         const face = (pts, fill, line) => { cx.beginPath(); pts.forEach(([x, y], i) => i ? cx.lineTo(x, y) : cx.moveTo(x, y)); cx.closePath(); cx.fillStyle = fill; cx.fill(); if (line) { cx.strokeStyle = line; cx.lineWidth = .6; cx.stroke(); } };
         const side = (q[0][0] + q[1][0]) / 2 < mid ? [q[1], q[2], t[2], t[1]] : [q[3], q[0], t[0], t[3]];
         const front = [q[3], q[2], t[2], t[3]];
+        if (window.LOWQ) {                                                     // computers: flat, fast towers
+          face(side, `rgba(${45 + 50 * k},${32 + 30 * k},${100 + 60 * k},.95)`);
+          face(front, `rgba(${70 + 70 * k},${50 + 40 * k},${150 + 60 * k},.95)`);
+          face(t, `rgba(${170 + 70 * k},${140 + 60 * k},255,.95)`);
+          continue;
+        }
         if (up > 3) {                                                          // soft light pool on the ground
           const gx = (q[0][0] + q[2][0]) / 2, gy = (q[0][1] + q[2][1]) / 2, gr = Math.max(4, up * .35);
           const g = cx.createRadialGradient(gx, gy, 0, gx, gy, gr); g.addColorStop(0, `rgba(170,120,255,${.18 + .2 * k})`); g.addColorStop(1, 'rgba(170,120,255,0)');

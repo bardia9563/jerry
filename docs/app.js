@@ -6,7 +6,7 @@ const NODE = { free: 'n-free', deal: 'n-deal', lowprof: 'n-low' };
 const DAY = 864e5, KEEP = 7 * DAY;
 let sigs = [], lastT = 0, demo = /demo/.test(location.search), first = true;
 
-function size() { const d = devicePixelRatio || 1;
+function size() { const d = window.LOWQ ? 1 : (devicePixelRatio || 1);
   cv.width = innerWidth * d; cv.height = innerHeight * d; cx.setTransform(d, 0, 0, d, 0, 0); }
 addEventListener('resize', size); size();
 

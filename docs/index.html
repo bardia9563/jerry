@@ -14,6 +14,9 @@
 <link rel="manifest" href="manifest.json">
 <script>/* always load the newest files (phones cache them for ~10 min otherwise) */
 window.V = Math.floor(Date.now() / 60000);
+/* computers get a lighter map (less lag); phones keep full quality */
+window.LOWQ = matchMedia('(pointer: fine)').matches && innerWidth >= 700;
+if (LOWQ) document.documentElement.classList.add('lowq');
 document.write('<link rel="stylesheet" href="style.css?v=' + V + '">');</script>
 </head>
 <body>

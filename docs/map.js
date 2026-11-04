@@ -18,7 +18,17 @@ const MAP = (() => {
   const lights = document.createElement('canvas'), lx = lights.getContext('2d');
   lights.width = PW * 2; lights.height = PH * 2; lights.id = 'lights';
   tiles.after(lights);
-  for (let x = tx0 * 2; x <= tx1 * 2 + 1; x++) for (let y = ty0 * 2; y <= ty1 * 2 + 1; y++) {
+  if (window.LOWQ) {                        // computers: fewer, lighter tiles and no street glow
+    lights.remove();
+    for (let x = tx0; x <= tx1; x++) for (let y = ty0; y <= ty1; y++) {
+      const img = new Image();
+      img.src = `https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/${Z}/${y}/${x}`;
+      img.style.cssText = `left:${(x - tx0) * 256}px;top:${(y - ty0) * 256}px;width:256px;height:256px`;
+      img.onerror = () => img.remove();
+      tiles.appendChild(img);
+    }
+  }
+  if (!window.LOWQ)   for (let x = tx0 * 2; x <= tx1 * 2 + 1; x++) for (let y = ty0 * 2; y <= ty1 * 2 + 1; y++) {
     const img = new Image();
     img.src = `https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/${Z + 1}/${y}/${x}`;
     img.style.left = (x - tx0 * 2) * 128 + 'px'; img.style.top = (y - ty0 * 2) * 128 + 'px';
