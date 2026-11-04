@@ -43,6 +43,6 @@ jobs:
         with:
           path: |
             seen.json
-            deals_seen.json
             chat_id.txt
+            deals_seen.json
           key: jerry-${{ github.run_id }}
