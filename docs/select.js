@@ -1,8 +1,15 @@
 // Tap a signal on the map (or an item in the list) to see it, copy its resale listing and post it.
 (() => {
   const pick = document.createElement('div'); pick.id = 'pick'; document.body.appendChild(pick);
-  const btn = document.createElement('button'); btn.id = 'listbtn'; btn.textContent = '☰ LIST'; document.body.appendChild(btn);
-  btn.onclick = () => document.body.classList.toggle('showfeed');
+  // bottom-right bar: ↑ ROI, ↑ PROFIT, ☰ LIST
+  const bar = document.createElement('div'); bar.id = 'lbar'; document.body.appendChild(bar);
+  const mk = (txt, fn, sort) => { const b = document.createElement('button'); b.textContent = txt; b.onclick = fn; if (sort) b.dataset.sort = sort; bar.appendChild(b); return b; };
+  const quick = v => () => { const open = document.body.classList.contains('showfeed');
+    if (open && window.FSORT_ON === v) { window.FSORT_ON = null; setSort('new'); return; }
+    window.FSORT_ON = v; setSort(v); document.body.classList.add('showfeed'); };
+  mk('↑ ROI', quick('roi'), 'roi');
+  mk('↑ PROFIT', quick('profit'), 'profit');
+  const btn = mk('☰ LIST', () => document.body.classList.toggle('showfeed')); btn.id = 'listbtn';
 
   const label = { free: 'FREE', deal: 'DEAL', lowprof: 'LOWPROF' };
   const FB_SELL = 'https://www.facebook.com/marketplace/create/item';
@@ -31,14 +38,14 @@
   }
 
   const dim = document.createElement('div'); dim.id = 'dim'; document.body.appendChild(dim);
-  function close() { pick.classList.remove('on'); dim.classList.remove('on'); window.FOCUS = null; }
+  function close() { pick.classList.remove('on'); dim.classList.remove('on'); document.body.classList.remove('picking'); window.FOCUS = null; }
 
   function show(a) {
     cur = a;
     const sig = sigs.find(s => s.a === a);
     window.FOCUS = sig || null;
     if (sig && window.ZOOM) ZOOM.flyTo(sig.el);
-    dim.classList.add('on');
+    dim.classList.add('on'); document.body.classList.add('picking');   // hide the list while an item is open
     pick.classList.remove('on'); void pick.offsetWidth;          // restart the open animation
     const L = a.listing, sell = L ? Math.round(+L.price || +a.value || 0) : 0;
     const price = a.kind === 'free' ? `free · worth ~$${a.value}` : `$${a.price} → $${a.value} (+$${Math.round(a.value - a.price)})`;

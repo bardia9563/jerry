@@ -100,9 +100,11 @@ function renderFeed(real) {
     (FEEDLIST.length ? FEEDLIST.map((a, k) => `<li class="${a.kind}${a.gone ? ' gone' : ''}" data-k="${k}"><a href="${esc(a.url)}" target="_blank" rel="noopener"><b>${LBL[a.kind] || 'DEAL'}</b> ${esc(a.title)}</a><small>${esc(money(a))} · ${roiTxt(a)}${a.gone ? ' · SOLD' : ''}</small><small>📍 ${esc(a.where)}${kmOf(a) != null ? ' · ' + tripTxt(a) : ''}</small></li>`).join('')
       : '<li class="empty"><small>nothing matches these filters yet</small></li>');
 }
+// quick sort buttons next to ☰ LIST use this
+window.setSort = v => { FSORT = v; renderFeed(sigs.map(s => s.a)); document.querySelectorAll('#lbar [data-sort]').forEach(b => b.classList.toggle('on', b.dataset.sort === FSORT)); };
 $('feed').addEventListener('change', e => {
   if (e.target.id === 'f-price') FPRICE = e.target.value;
-  if (e.target.id === 'f-sort') FSORT = e.target.value;
+  if (e.target.id === 'f-sort') { setSort(e.target.value); return; }
   if (e.target.id === 'f-dist') FDIST = e.target.value;
   renderFeed(sigs.map(s => s.a));
 });

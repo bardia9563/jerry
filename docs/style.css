@@ -103,3 +103,13 @@ header{position:fixed;top:0;left:0;right:0;padding:14px 16px;z-index:5;
 /* busier ball = slightly brighter glow */
 .node i{box-shadow:0 0 calc(20px + 14px * var(--g, 0)) currentColor,inset 0 0 calc(16px + 8px * var(--g, 0)) currentColor;
   filter:brightness(calc(.92 + .22 * var(--g, 0)));transition:box-shadow 1s ease,filter 1s ease}
+/* hide the list while an item card is open, bring it back on close */
+#feed{transition:opacity .3s ease,transform .3s ease}
+body.picking #feed,body.picking #listbtn{opacity:0;pointer-events:none;transform:translateY(12px)}
+/* bottom-right quick bar (phones): ↑ ROI · ↑ PROFIT · ☰ LIST */
+#lbar{position:fixed;right:12px;bottom:42px;z-index:7;display:flex;gap:6px;transition:opacity .3s ease,transform .3s ease}
+#lbar button{height:38px;padding:0 10px;border-radius:8px;border:1px solid #ffffff33;background:#0b0b10e6;color:#e9e6f2;font:12px ui-monospace,monospace}
+#lbar #listbtn{position:static;display:block}
+#lbar button.on{border-color:var(--low);color:var(--low);box-shadow:0 0 10px #ffd16633}
+@media (min-width:701px){#lbar{display:none}}
+body.picking #lbar{opacity:0;pointer-events:none;transform:translateY(12px)}
