@@ -16,7 +16,7 @@ const MAP = (() => {
 
   for (let x = tx0; x <= tx1; x++) for (let y = ty0; y <= ty1; y++) {
     const img = new Image();
-    img.src = `https://${'abcd'[(x + y) % 4]}.basemaps.cartocdn.com/dark_nolabels/${Z}/${x}/${y}.png`;
+    img.src = `https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/${Z}/${y}/${x}`;
     img.style.left = (x - tx0) * 256 + 'px'; img.style.top = (y - ty0) * 256 + 'px';
     img.onerror = () => img.remove();
     tiles.appendChild(img);
