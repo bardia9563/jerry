@@ -23,7 +23,7 @@ header{position:fixed;top:0;left:0;right:0;padding:14px 16px;z-index:5;
   transform-origin:50% 100%;perspective:900px;z-index:1}
 #plane{position:absolute;inset:0;transform:rotateX(58deg);transform-origin:50% 100%;
   border:1px solid #2a2834;box-shadow:0 0 80px #6a3cff33}
-#tiles{position:absolute;inset:0;filter:hue-rotate(200deg) saturate(2.2) brightness(1.15) contrast(1.15);opacity:.9}
+#tiles{position:absolute;inset:0;filter:brightness(.85) contrast(1.25) sepia(.7) hue-rotate(210deg) saturate(2.2)}
 #tiles img{position:absolute;width:256px;height:256px}
 #grid{position:absolute;inset:0;
   background-image:linear-gradient(#ffffff0d 1px,transparent 1px),linear-gradient(90deg,#ffffff0d 1px,transparent 1px);
