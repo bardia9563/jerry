@@ -68,3 +68,4 @@ header{position:fixed;top:0;left:0;right:0;padding:14px 16px;z-index:5;
 #pick .row a{margin-top:0}
 #pick button{padding:6px 10px;border:1px solid #ffffff44;border-radius:6px;background:#15151d;color:var(--fg);font:12px ui-monospace,monospace;cursor:pointer}
 #pick button.main{border-color:#1877f2;background:#1877f2;color:#fff;font-weight:700}
+#pick .hint{margin-top:8px;padding:8px;border-radius:6px;background:#1877f222;border:1px solid #1877f266;line-height:1.5}

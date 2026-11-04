@@ -23,7 +23,7 @@
       (a.gone ? '<div class="gone">🛑 Original is SOLD / gone — take your listing down</div>' : '') +
       (L ? `<div class="lst"><div class="lt">${esc(L.title)}</div><div class="lp">List for $${sell}</div><div class="ld">${esc(L.description)}</div></div>
             <div class="row"><button data-a="all">📋 Copy all</button><button data-a="title">Title</button><button data-a="price">Price</button><button data-a="desc">Description</button></div>
-            <div class="row"><button data-a="fb" class="main">List it on Marketplace ↗</button></div>` : '') +
+            <div class="row"><button data-a="fb" class="main">Copy &amp; open Facebook ↗</button></div><div class="hint" hidden>✓ Listing copied. In Facebook tap <b>Marketplace → Sell → Item for sale</b>, add photos, then paste.</div>` : '') +
       `<div class="row">` +
       (a.url && a.url !== '#' ? `<a href="${esc(a.url.startsWith('/') ? 'https://www.kijiji.ca' + a.url : a.url)}" target="_blank" rel="noopener">Open original ↗</a>` : '') +
       (a.lat ? `<a href="https://maps.apple.com/?daddr=${a.lat},${a.lon}&dirflg=d" target="_blank" rel="noopener">🧭 Directions</a>` : '') +
@@ -45,7 +45,7 @@
     if (act === 'title') copy(L.title, t);
     if (act === 'price') copy(sell, t);
     if (act === 'desc') copy(L.description, t);
-    if (act === 'fb') { copy(all, t); window.open(FB_SELL, '_blank', 'noopener'); }
+    if (act === 'fb') { copy(all, t); pick.querySelector('.hint').hidden = false; window.open(FB_SELL, '_blank', 'noopener'); }
   });
 
   // tapping an item in the list opens its card instead of leaving the page
