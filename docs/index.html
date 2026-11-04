@@ -4,7 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Jerry Signals</title>
-<link rel="stylesheet" href="style.css">
+<script>/* always load the newest files (phones cache them for ~10 min otherwise) */
+window.V = Math.floor(Date.now() / 60000);
+document.write('<link rel="stylesheet" href="style.css?v=' + V + '">');</script>
 </head>
 <body>
 <header>
@@ -33,11 +35,13 @@
 <ul id="feed"></ul>
 <div id="ticker"><span id="tick">waiting for signals…</span></div>
 
-<script src="map.js"></script>
-<script src="app.js"></script>
-<script src="feed.js"></script>
-<script src="zoom.js"></script>
-<script src="buildings.js"></script>
-<script src="select.js"></script>
+<script>
+document.write('<script src="map.js?v=' + V + '"><\/script>');
+document.write('<script src="app.js?v=' + V + '"><\/script>');
+document.write('<script src="feed.js?v=' + V + '"><\/script>');
+document.write('<script src="zoom.js?v=' + V + '"><\/script>');
+document.write('<script src="buildings.js?v=' + V + '"><\/script>');
+document.write('<script src="select.js?v=' + V + '"><\/script>');
+</script>
 </body>
 </html>
