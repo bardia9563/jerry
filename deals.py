@@ -51,7 +51,8 @@ Only include listings where resale value minus asking price is at least
 ${min_profit} (any margin is fine, e.g. buy $200 -> sell $230 counts). Skip anything that looks
 like a scam, broken, an accessory/box only, a store/dealer ad, or too vague.
 
-For each good deal, also write a resale listing.
+For each good deal, also write a resale listing. The seller is in Downtown Toronto:
+end the listing description with "Pickup in Downtown Toronto."
 
 Listings:
 {items}
@@ -105,7 +106,7 @@ def format_deal(it, d, kind="deal"):
         f"(<b>+${profit:.0f}</b>) · risk: {e(d.get('risk', '?'))}\n"
         f"{e(d.get('why', ''))}\n"
         f"📍 {e(it['location'])} ({it['source']})\n{e(it['url'])}\n\n"
-        f"📝 <b>Resale listing:</b>\n<pre>{e(lst.get('title', ''))}\n"
+        f"📝 <b>Resale listing</b> (set location: Downtown Toronto):\n<pre>{e(lst.get('title', ''))}\n"
         f"${lst.get('price', d['value'])}\n\n{e(lst.get('description', ''))}</pre>"
     )
 

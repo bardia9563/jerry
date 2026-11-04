@@ -16,10 +16,10 @@ import notify
 PATH = "docs/alerts.json"
 EVERY = 4 * 60           # re-check each original every scan (about every 5 minutes)
 KEEP = 7 * 86400         # only watch alerts from the last 7 days
-GONE_WORDS = [
-    "no longer available", "has been deleted", "has expired", "has been removed",
-    "this posting has been flagged", "listing was removed", "ad is not available",
-]
+# Only very specific "dead ad" wording (Craigslist). Kijiji pages contain generic
+# phrases even on live ads, so for Kijiji / Karrot only a real 404 / 410 counts.
+GONE_WORDS = ["this posting has been deleted", "this posting has expired",
+              "this posting has been flagged for removal"]
 
 
 def is_gone(url):
@@ -28,18 +28,14 @@ def is_gone(url):
         url = "https://www.kijiji.ca" + url
     try:
         r = requests.get(url, headers={"User-Agent": config.USER_AGENT},
-                         timeout=20, allow_redirects=True)
+                         timeout=20, allow_redirects=False)
     except Exception:
         return None
     if r.status_code in (404, 410):
         return True
     if r.status_code != 200:
-        return None
-    text = r.text.lower()
-    if any(w in text for w in GONE_WORDS):
-        return True
-    # Kijiji / Craigslist send dead ads to a search or home page
-    if "kijiji.ca" in url and "/v-" in url and "/v-" not in r.url:
+        return None                    # redirects, blocks, errors: don't guess
+    if "craigslist.org" in url and any(w in r.text.lower() for w in GONE_WORDS):
         return True
     return False
 
