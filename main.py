@@ -1,4 +1,5 @@
 """Jerry: scan -> AI value check -> Telegram alert."""
+import karrot
 import scanner
 import valuer
 import notify
@@ -13,7 +14,7 @@ def main():
                              "I find free stuff worth $50+.")
         print("Telegram connected.")
 
-    items = scanner.scan()
+    items = scanner.scan() + karrot.scan()
     print(f"{len(items)} new item(s) passed filters")
     if not items:
         return
