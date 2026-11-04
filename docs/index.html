@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Jerry Signals</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div class="title">JERRY / LANDSCAPE OF SIGNALS</div>
+  <div class="sub">toronto · free + deals · live</div>
+  <div class="stats">
+    <div><b id="s-today">0</b><span>today</span></div>
+    <div><b id="s-free">0</b><span>free</span></div>
+    <div><b id="s-deal">0</b><span>deals</span></div>
+    <div><b id="s-profit">$0</b><span>potential</span></div>
+  </div>
+</header>
+
+<div id="nodes">
+  <div class="node free" id="n-free"><i></i><b>FREE</b><span id="c-free">0</span></div>
+  <div class="node deal" id="n-deal"><i></i><b>DEALS</b><span id="c-deal">0</span></div>
+</div>
+
+<div id="stage"><div id="plane"><div id="tiles"></div><div id="grid"></div><div id="pts"></div></div></div>
+<canvas id="fx"></canvas>
+
+<div id="toast"></div>
+<div id="demo" hidden>no alerts yet · showing demo signals</div>
+<ul id="feed"></ul>
+<div id="ticker"><span id="tick">waiting for signals…</span></div>
+
+<script src="map.js"></script>
+<script src="app.js"></script>
+<script src="feed.js"></script>
+</body>
+</html>
