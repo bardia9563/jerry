@@ -60,3 +60,11 @@ header{position:fixed;top:0;left:0;right:0;padding:14px 16px;z-index:5;
 #listbtn{display:none;position:fixed;right:12px;bottom:42px;z-index:7;height:38px;padding:0 12px;border-radius:8px;
   border:1px solid #ffffff33;background:#0b0b10e6;color:#e9e6f2;font:12px ui-monospace,monospace}
 @media (max-width:700px){#listbtn{display:block}body.showfeed #feed{display:block;left:12px;right:12px;width:auto;bottom:88px;max-height:50vh}}
+#pick{max-height:72vh;overflow:auto;touch-action:pan-y}
+#pick .gone{margin-top:8px;color:#ff6b6b;font-weight:700}
+#pick .lst{margin-top:8px;padding:8px;border:1px solid #ffffff1f;border-radius:6px;background:#ffffff08}
+#pick .lt{font-weight:700}#pick .lp{color:var(--free);margin:3px 0}#pick .ld{color:var(--dim);white-space:pre-wrap;max-height:9em;overflow:auto}
+#pick .row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+#pick .row a{margin-top:0}
+#pick button{padding:6px 10px;border:1px solid #ffffff44;border-radius:6px;background:#15151d;color:var(--fg);font:12px ui-monospace,monospace;cursor:pointer}
+#pick button.main{border-color:#1877f2;background:#1877f2;color:#fff;font-weight:700}
