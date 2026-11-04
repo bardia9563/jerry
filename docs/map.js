@@ -30,7 +30,7 @@ const MAP = (() => {
       const t = document.createElement('canvas'); t.width = t.height = 256; const g = t.getContext('2d');
       g.drawImage(c, 0, 0); const d = g.getImageData(0, 0, 256, 256), a = d.data;
       for (let i = 0; i < a.length; i += 4) {
-        const L = (a[i] + a[i + 1] + a[i + 2]) / 3, k = Math.max(0, Math.min(1, (L - 62) / 50));
+        const L = (a[i] + a[i + 1] + a[i + 2]) / 3, k = Math.max(0, Math.min(1, (L - 83) / 18));
         a[i] = 255; a[i + 1] = 150 + 70 * k; a[i + 2] = 90 + 120 * k; a[i + 3] = k * 255;
       }
       g.putImageData(d, 0, 0);
