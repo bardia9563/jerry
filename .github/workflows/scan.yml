@@ -1,0 +1,42 @@
+name: free-item-scan
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"   # every 5 min (GitHub sometimes runs it a bit late)
+  workflow_dispatch:        # lets you press "Run workflow" by hand
+
+concurrency:
+  group: scan
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install -r requirements.txt
+
+      # Remember which listings were already seen between runs.
+      - uses: actions/cache/restore@v4
+        with:
+          path: seen.json
+          key: seen-${{ github.run_id }}
+          restore-keys: seen-
+
+      - run: python scanner.py
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
+      - uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: seen.json
+          key: seen-${{ github.run_id }}
