@@ -37,7 +37,7 @@ def geocode(name):
     return res
 
 
-def log(kind, it, value=None):
+def log(kind, it, value=None, listing=None):
     lat, lon = it.get("lat"), it.get("lon")
     if lat is None or lon is None:
         lat, lon = geocode(it.get("location"))
@@ -52,6 +52,10 @@ def log(kind, it, value=None):
         "where": it.get("location", ""), "lat": round(lat, 5),
         "lon": round(lon, 5),
     })
+    if listing:                       # ready-made resale listing for the map's "List it" button
+        data[-1]["listing"] = {"title": str(listing.get("title", ""))[:100],
+                               "price": listing.get("price") or value,
+                               "description": str(listing.get("description", ""))[:1000]}
     json.dump(data[-300:], open(PATH, "w"))
 
 
@@ -65,7 +69,7 @@ def _free(it):
 
 
 def _deal(it, d, kind="deal"):
-    log(kind, it, d.get("value"))
+    log(kind, it, d.get("value"), d.get("listing"))
     return _deal_fmt(it, d, kind)
 
 
