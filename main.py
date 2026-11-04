@@ -1,4 +1,5 @@
 """Jerry: scan -> AI value check -> Telegram alert."""
+import deals
 import karrot
 import scanner
 import valuer
@@ -13,6 +14,10 @@ def main():
         notify.send(chat_id, "✅ Jerry is connected! I'll message you when "
                              "I find free stuff worth $50+.")
         print("Telegram connected.")
+    try:
+        deals.run(chat_id)  # Bot 2
+    except Exception as e:
+        print(f"[deals] FAILED: {e}")
 
     items = scanner.scan() + karrot.scan()
     print(f"{len(items)} new item(s) passed filters")
