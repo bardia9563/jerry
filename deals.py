@@ -12,7 +12,8 @@ from deal_sources import kijiji, craigslist, karrot_items
 from scanner import PHONE_RE
 
 MIN_PROFIT = 30          # dollars
-MIN_MARGIN = 0.25        # profit must also be >= 25% of the buy price
+MIN_MARGIN = 0.25        # DEALS: profit also >= 25% of the buy price
+# LOWPROF (bot 3): $30+ profit but under 25% margin, e.g. buy $200 -> sell $230
 MIN_PRICE = 5            # skip $1 placeholder prices
 MAX_AI_ITEMS = 25        # per run, keeps AI cost low
 SEEN_FILE = "deals_seen.json"
@@ -45,7 +46,7 @@ PROMPT = """You help a Toronto reseller find UNDERPRICED used items to buy and r
 For each listing (asking price in CAD), estimate the realistic price it would
 SELL for used on Facebook Marketplace / Kijiji in Toronto. Be conservative.
 Only include listings where resale value minus asking price is at least
-${min_profit} AND at least {margin}% of the asking price. Skip anything that looks
+${min_profit} (any margin is fine, e.g. buy $200 -> sell $230 counts). Skip anything that looks
 like a scam, broken, an accessory/box only, a store/dealer ad, or too vague.
 
 For each good deal, also write a resale listing.
@@ -63,7 +64,7 @@ def ai_check(items):
                          "description": i["description"]}) for i in items]
     body = {"model": valuer.pick_model(), "max_tokens": 2000,
             "messages": [{"role": "user", "content": PROMPT.format(
-                min_profit=MIN_PROFIT, margin=int(MIN_MARGIN * 100),
+                min_profit=MIN_PROFIT,
                 items="\n".join(lines))}]}
     r = requests.post(f"{valuer.API}/messages", headers=valuer._headers(),
                       json=body, timeout=90)
@@ -87,12 +88,13 @@ def save_seen(seen):
 
 # ---------- main ----------
 
-def format_deal(it, d):
+def format_deal(it, d, kind="deal"):
     e = html.escape
+    head = "💸 <b>DEAL" if kind == "deal" else "🪙 <b>LOWPROF"
     profit = d["value"] - it["price"]
     lst = d.get("listing") or {}
     return (
-        f"💸 <b>DEAL: {e(it['title'])}</b>\n"
+        f"{head}: {e(it['title'])}</b>\n"
         f"Buy ${it['price']:.0f} → resell ~${d['value']} "
         f"(<b>+${profit:.0f}</b>) · risk: {e(d.get('risk', '?'))}\n"
         f"{e(d.get('why', ''))}\n"
@@ -142,8 +144,9 @@ def run(chat_id):
         if not it or not d.get("value"):
             continue
         profit = d["value"] - it["price"]
-        if profit < MIN_PROFIT or profit < MIN_MARGIN * it["price"]:
+        if profit < MIN_PROFIT:
             continue
-        print(f"  DEAL  ${it['price']:.0f} -> ${d['value']}  {it['title'][:50]}")
+        kind = "deal" if profit >= MIN_MARGIN * it["price"] else "lowprof"
+        print(f"  {kind.upper()}  ${it['price']:.0f} -> ${d['value']}  {it['title'][:50]}")
         if chat_id:
-            notify.send(chat_id, format_deal(it, d))
+            notify.send(chat_id, format_deal(it, d, kind))

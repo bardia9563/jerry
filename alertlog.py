@@ -64,9 +64,9 @@ def _free(it):
     return _free_fmt(it)
 
 
-def _deal(it, d):
-    log("deal", it, d.get("value"))
-    return _deal_fmt(it, d)
+def _deal(it, d, kind="deal"):
+    log(kind, it, d.get("value"))
+    return _deal_fmt(it, d, kind)
 
 
 notify.format_alert = _free
