@@ -11,6 +11,7 @@ import requests
 
 import deals
 import notify
+import push
 
 PATH = "docs/alerts.json"
 GEO_CACHE = {}
@@ -51,6 +52,7 @@ def log(kind, it, value=None, listing=None):
         "source": it.get("source", ""), "url": it.get("url", ""),
         "where": it.get("location", ""), "lat": round(lat, 5),
         "lon": round(lon, 5),
+        "images": (it.get("images") or [u for u in [it.get("image")] if u])[:6],
     })
     if listing:                       # ready-made resale listing for the map's "List it" button
         data[-1]["listing"] = {"title": str(listing.get("title", ""))[:100],
@@ -65,11 +67,18 @@ _deal_fmt = deals.format_deal
 
 def _free(it):
     log("free", it)
+    push.send(f"🆓 FREE: {it.get('title', '')[:60]}",
+              f"Worth ~${it.get('value', 0)} · {it.get('location', '')}", it.get("url", ""))
     return _free_fmt(it)
 
 
 def _deal(it, d, kind="deal"):
     log(kind, it, d.get("value"), d.get("listing"))
+    profit = round((d.get("value") or 0) - (it.get("price") or 0))
+    head = "💸 DEAL" if kind == "deal" else "🪙 LOWPROF"
+    push.send(f"{head}: {it.get('title', '')[:60]}",
+              f"${it.get('price', 0):.0f} → ${d.get('value')} (+${profit}) · {it.get('location', '')}",
+              it.get("url", ""))
     return _deal_fmt(it, d, kind)
 
 

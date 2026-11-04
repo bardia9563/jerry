@@ -33,6 +33,7 @@ def kijiji():
                         "title": (x.get("title") or "").strip(),
                         "description": (x.get("description") or "")[:300],
                         "price": amt / 100, "url": x.get("url"),
+                        "images": [u for u in (x.get("imageUrls") or []) if isinstance(u, str)][:6],
                         "location": (x.get("location") or {}).get("name", "")})
     return out
 
@@ -66,5 +67,6 @@ def karrot_items():
                     "title": (a.get("title") or "").strip(), "description": "",
                     "price": float(a.get("price") or 0),
                     "url": f"https://www.karrotmarket.com/ca/buy-sell/{a['nodeId']}/",
+                    "images": [u for u in [a.get("thumbnail")] if u],
                     "location": a.get("displayLocationName") or ""})
     return out
