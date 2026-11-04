@@ -24,7 +24,7 @@ const MAP = (() => {
 
   function fit() {
     // whole city visible: about screen-wide, and about half the screen tall once tilted
-    const s = Math.min(innerWidth * (innerWidth < 700 ? 1.3 : 1.0) / PW, innerHeight * 0.5 / (PH * 0.55));
+    const s = Math.min(innerWidth * (innerWidth < 700 ? 1.9 : 1.15) / PW, innerHeight * 0.62 / (PH * 0.55));
     stage.style.transform = `translateX(-50%) scale(${s})`;
   }
   addEventListener('resize', fit); fit();
