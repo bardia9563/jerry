@@ -9,6 +9,9 @@ concurrency:
   group: jerry
   cancel-in-progress: false
 
+permissions:
+  contents: write
+
 jobs:
   scan:
     runs-on: ubuntu-latest
@@ -46,3 +49,10 @@ jobs:
             chat_id.txt
             deals_seen.json
           key: jerry-${{ github.run_id }}
+      - name: Save alerts for the map
+        if: always()
+        run: |
+          git config user.name "jerry-bot"
+          git config user.email "jerry-bot@users.noreply.github.com"
+          git add docs/alerts.json
+          git diff --cached --quiet || (git commit -m "New alerts" && git pull --rebase && git push)
