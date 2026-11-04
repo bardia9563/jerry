@@ -1,7 +1,8 @@
 // Live signals: alerts fly from where they are in Toronto up to FREE / DEALS.
 const cv = document.getElementById('fx'), cx = cv.getContext('2d');
 const $ = id => document.getElementById(id);
-const COL = { free: [89, 255, 176], deal: [255, 95, 168] };
+const COL = { free: [89, 255, 176], deal: [255, 95, 168], lowprof: [255, 209, 102] };
+const NODE = { free: 'n-free', deal: 'n-deal', lowprof: 'n-low' };
 const DAY = 864e5, KEEP = 7 * DAY;
 let sigs = [], lastT = 0, demo = /demo/.test(location.search), first = true;
 
@@ -20,21 +21,21 @@ function bez(p, q, r, s, t) { const u = 1 - t;
   return { x: u*u*u*p.x + 3*u*u*t*q.x + 3*u*t*t*r.x + t*t*t*s.x,
            y: u*u*u*p.y + 3*u*u*t*q.y + 3*u*t*t*r.y + t*t*t*s.y }; }
 
-function nodePos(kind) { const r = $(kind === 'free' ? 'n-free' : 'n-deal').querySelector('i').getBoundingClientRect();
+function nodePos(kind) { const r = $(NODE[kind] || 'n-deal').querySelector('i').getBoundingClientRect();
   return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }
 
 function frame(now) {
   cx.clearRect(0, 0, innerWidth, innerHeight);
   cx.globalCompositeOperation = 'lighter';
-  const ends = { free: nodePos('free'), deal: nodePos('deal') };
+  const ends = { free: nodePos('free'), deal: nodePos('deal'), lowprof: nodePos('lowprof') };
   const wall = Date.now();
   for (const s of sigs) {
-    const p = MAP.screen(s.el), e = ends[s.a.kind], h = p.y - e.y;
+    const p = MAP.screen(s.el), e = ends[s.a.kind] || ends.deal, h = p.y - e.y;
     const q = { x: p.x + (s.seed - .5) * 80, y: p.y - h * .55 }, r = { x: e.x, y: e.y + h * .35 };
     const age = s.a.demo ? 0 : (wall - s.a.t * 1000) / KEEP;
     const draw = clamp((now - s.born) / 1400, 0, 1);
     const fresh = clamp(1 - (now - s.born) / 6000, 0, 1);
-    const al = clamp(1 - age, .18, 1) * (.35 + .65 * fresh), [R, G, Bc] = COL[s.a.kind];
+    const al = clamp(1 - age, .18, 1) * (.35 + .65 * fresh), [R, G, Bc] = COL[s.a.kind] || COL.deal;
     cx.beginPath();
     for (let i = 0; i <= 40 * draw; i++) { const b = bez(p, q, r, e, i / 40); i ? cx.lineTo(b.x, b.y) : cx.moveTo(b.x, b.y); }
     cx.strokeStyle = `rgba(${R},${G},${Bc},${al * .18})`; cx.lineWidth = 6; cx.stroke();

@@ -1,6 +1,6 @@
 // 3D skyline: real Toronto towers (OpenStreetMap, 60 m+) extruded off the map.
 (() => {
-  const EX = 5, FP = 2.2;               // exaggerate height and footprint so towers read at city scale
+  const EX = 4, FP = 1.8;               // exaggerate height and footprint so towers read at city scale
   const M_PER_PX = 55.3;                // metres per map pixel at zoom 11 (Toronto)
   const stage = document.getElementById('stage'), pts = document.getElementById('pts');
   const PW = parseFloat(stage.style.width), PH = parseFloat(stage.style.height);
@@ -31,13 +31,40 @@
   }
 
   let B = [], lastKey = '';
+  const parse = txt => txt.split('_').filter(Boolean).map(s => s.trim().split(/\s+/).map(Number))
+    .map(([x, y, w, d, h]) => ({ x: (x + w * (1 - FP) / 2) / 10, y: (y + d * (1 - FP) / 2) / 10, w: w * FP / 10, d: d * FP / 10, h }))
+    .sort((a, b) => a.y - b.y);                         // far (north) first
+  const use = txt => { const nb = parse(txt); if (nb.length > B.length) { B = nb; lastKey = ''; } };
+  const KEY = 'jerry-bld-v2';
+  let cached = null; try { cached = localStorage.getItem(KEY); } catch (e) {}
+  if (cached) use(cached);
   Promise.all([1, 2, 3].map(i => fetch(`bld${i}.txt`).then(r => r.ok ? r.text() : '').catch(() => '')))
-    .then(parts => {
-      B = parts.join('_').split('_').filter(Boolean).map(s => s.trim().split(/\s+/).map(Number))
-        .map(([x, y, w, d, h]) => ({ x: (x + w * (1 - FP) / 2) / 10, y: (y + d * (1 - FP) / 2) / 10, w: w * FP / 10, d: d * FP / 10, h }));
-      B.sort((a, b) => a.y - b.y);                      // far (north) first
-      lastKey = '';
-    });
+    .then(parts => use(parts.join('_')));
+
+  // first visit: pull every 22 m+ / 7+ floor building from OpenStreetMap, then keep it in this browser
+  if (!cached) (async () => {
+    const bb = '(43.58,-79.64,43.86,-79.11)';
+    const q = `[out:json][timeout:150];(way["building"]["height"](if:number(t["height"])>=22)${bb};way["building"]["building:levels"](if:number(t["building:levels"])>=7)${bb};);out tags bb;`;
+    const W = 256 * 2 ** 11, mx = l => (l + 180) / 360 * W,
+      my = a => { const t = a * Math.PI / 180; return (1 - Math.log(Math.tan(t) + 1 / Math.cos(t)) / Math.PI) / 2 * W; };
+    for (const u of ['https://overpass.kumi.systems/api/interpreter', 'https://overpass-api.de/api/interpreter', 'https://maps.mail.ru/osm/tools/overpass/api/interpreter']) {
+      try {
+        const r = await fetch(u, { method: 'POST', body: 'data=' + encodeURIComponent(q) }); if (!r.ok) continue;
+        const recs = ['6077 6425 9 9 553'];                                   // CN Tower
+        for (const e of (await r.json()).elements) {
+          const b = e.bounds, t = e.tags || {}; if (!b) continue;
+          let h = parseFloat(t.height); if (!(h > 0)) h = parseFloat(t['building:levels']) * 3.3;
+          if (!(h >= 22) || h > 700) continue;
+          const x = (mx(b.minlon) - 570 * 256) * 10, y = (my(b.maxlat) - 745 * 256) * 10,
+            w = (mx(b.maxlon) - mx(b.minlon)) * 10, d = (my(b.minlat) - my(b.maxlat)) * 10;
+          if (w > 400 || d > 400) continue;
+          recs.push([x, y, Math.max(2, w), Math.max(2, d), h].map(Math.round).join(' '));
+        }
+        const txt = recs.join('_'); use(txt); try { localStorage.setItem(KEY, txt); } catch (e) {}
+        return;
+      } catch (e) {}
+    }
+  })();
 
   function draw() {
     const d = devicePixelRatio || 1;
@@ -55,14 +82,38 @@
         const up = b.h / M_PER_PX * EX * sx * 0.85;
         const t = q.map(([x, y]) => [x, y - up]);
         const k = Math.min(1, b.h / 300);                                     // taller = brighter
-        const face = (pts, fill) => { cx.beginPath(); pts.forEach(([x, y], i) => i ? cx.lineTo(x, y) : cx.moveTo(x, y)); cx.closePath(); cx.fillStyle = fill; cx.fill(); };
+        const face = (pts, fill, line) => { cx.beginPath(); pts.forEach(([x, y], i) => i ? cx.lineTo(x, y) : cx.moveTo(x, y)); cx.closePath(); cx.fillStyle = fill; cx.fill(); if (line) { cx.strokeStyle = line; cx.lineWidth = .6; cx.stroke(); } };
         const side = (q[0][0] + q[1][0]) / 2 < mid ? [q[1], q[2], t[2], t[1]] : [q[3], q[0], t[0], t[3]];
-        face(side, `rgba(${60 + 60 * k},${40 + 30 * k},${120 + 60 * k},.85)`);
-        face([q[3], q[2], t[2], t[3]], `rgba(${80 + 80 * k},${55 + 40 * k},${160 + 70 * k},.9)`);
-        face(t, `rgba(${170 + 70 * k},${140 + 60 * k},255,.95)`);
+        const front = [q[3], q[2], t[2], t[3]];
+        if (up > 3) {                                                          // soft light pool on the ground
+          const gx = (q[0][0] + q[2][0]) / 2, gy = (q[0][1] + q[2][1]) / 2, gr = Math.max(4, up * .35);
+          const g = cx.createRadialGradient(gx, gy, 0, gx, gy, gr); g.addColorStop(0, `rgba(170,120,255,${.18 + .2 * k})`); g.addColorStop(1, 'rgba(170,120,255,0)');
+          cx.fillStyle = g; cx.fillRect(gx - gr, gy - gr, 2 * gr, 2 * gr);
+        }
+        const sg = cx.createLinearGradient(0, q[3][1], 0, t[3][1]);           // faces fade darker at the base
+        sg.addColorStop(0, `rgba(${25 + 30 * k},${18 + 20 * k},${60 + 40 * k},.95)`); sg.addColorStop(1, `rgba(${70 + 60 * k},${48 + 35 * k},${140 + 60 * k},.95)`);
+        face(side, sg);
+        const fg = cx.createLinearGradient(0, q[3][1], 0, t[3][1]);
+        fg.addColorStop(0, `rgba(${40 + 40 * k},${28 + 25 * k},${90 + 50 * k},.95)`); fg.addColorStop(1, `rgba(${100 + 80 * k},${70 + 45 * k},${190 + 60 * k},.95)`);
+        face(front, fg, 'rgba(200,170,255,.18)');
+        const fw = Math.abs(q[2][0] - q[3][0]);
+        if (up > 14 && fw > 3) {                                               // lit windows
+          const floors = Math.min(60, Math.floor(up / 3.2)), cols = Math.max(1, Math.min(8, Math.floor(fw / 2.6)));
+          let seed = (b.x * 73 + b.y * 31) | 0;
+          for (let f = 1; f < floors; f++) for (let c = 0; c < cols; c++) {
+            seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+            if (seed % 100 > 38) continue;
+            const u = (c + .5) / cols, v = f / floors;
+            const x = q[3][0] + (q[2][0] - q[3][0]) * u, y = q[3][1] + (q[2][1] - q[3][1]) * u - up * v;
+            cx.fillStyle = seed % 7 ? 'rgba(255,214,150,.75)' : 'rgba(170,220,255,.8)';
+            cx.fillRect(x - .6, y - .5, 1.2, 1);
+          }
+        }
+        face(t, `rgba(${170 + 70 * k},${140 + 60 * k},255,.95)`, 'rgba(255,255,255,.35)');
         if (b.h > 200) {                                                      // glow on the tallest
           cx.strokeStyle = `rgba(200,170,255,${.35 + .4 * k})`; cx.lineWidth = 1;
           cx.beginPath(); cx.moveTo(t[3][0], t[3][1]); cx.lineTo(t[2][0], t[2][1]); cx.stroke();
+          if (b.h > 400) { cx.fillStyle = '#ff4d6d'; cx.beginPath(); cx.arc((t[0][0] + t[2][0]) / 2, (t[0][1] + t[2][1]) / 2 - 2, 1.6, 0, 7); cx.fill(); }
         }
       }
     }

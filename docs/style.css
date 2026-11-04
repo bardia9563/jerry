@@ -1,4 +1,4 @@
-:root{--bg:#050507;--fg:#e9e6f2;--dim:#8a8698;--free:#59ffb0;--deal:#ff5fa8;--home:#ffffff}
+:root{--bg:#050507;--fg:#e9e6f2;--dim:#8a8698;--free:#59ffb0;--deal:#ff5fa8;--home:#ffffff;--low:#ffd166}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:var(--bg);color:var(--fg);overflow:hidden;
   font:12px/1.3 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
@@ -16,15 +16,19 @@ header{position:fixed;top:0;left:0;right:0;padding:14px 16px;z-index:5;
   box-shadow:0 0 24px currentColor,inset 0 0 18px currentColor;background:#0b0b10}
 .node b{letter-spacing:.2em;font-size:11px}
 .node span{color:var(--dim)}
-.node.free{color:var(--free)}.node.deal{color:var(--deal)}
+.node.free{color:var(--free)}.node.deal{color:var(--deal)}.node.low{color:var(--low)}
 .node.hit i{animation:hit .9s ease-out}
 @keyframes hit{0%{transform:scale(1.5);box-shadow:0 0 60px currentColor}100%{transform:scale(1)}}
 #stage{position:fixed;left:50%;bottom:7vh;width:1024px;height:768px;
   transform-origin:50% 100%;perspective:900px;z-index:1}
 #plane{position:absolute;inset:0;transform:rotateX(58deg);transform-origin:50% 100%;
-  border:1px solid #2a2834;box-shadow:0 0 80px #6a3cff33}
-#tiles{position:absolute;inset:0;filter:brightness(.85) contrast(1.25) sepia(.7) hue-rotate(210deg) saturate(2.2)}
-#tiles img{position:absolute;width:256px;height:256px}
+  border-bottom:1px solid #2a2834}
+#tiles{position:absolute;inset:0;filter:brightness(.75) contrast(1.35) sepia(.7) hue-rotate(210deg) saturate(2.4)}
+#tiles img{position:absolute;width:128px;height:128px}
+#tiles,#lights{-webkit-mask-image:linear-gradient(transparent,#000 18%);mask-image:linear-gradient(transparent,#000 18%)}
+#lights{position:absolute;inset:0;width:100%;height:100%;mix-blend-mode:screen;opacity:.85}
+#plane::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at 59% 82%,#8a5cff22,transparent 45%)}
 #grid{position:absolute;inset:0;
   background-image:linear-gradient(#ffffff0d 1px,transparent 1px),linear-gradient(90deg,#ffffff0d 1px,transparent 1px);
   background-size:32px 32px}
@@ -41,7 +45,7 @@ header{position:fixed;top:0;left:0;right:0;padding:14px 16px;z-index:5;
 #feed li{padding:5px 0;border-bottom:1px solid #ffffff14}
 #feed a{color:var(--fg);text-decoration:none}
 #feed small{color:var(--dim);display:block}
-#feed .free b{color:var(--free)}#feed .deal b{color:var(--deal)}
+#feed .free b{color:var(--free)}#feed .deal b{color:var(--deal)}#feed .lowprof b{color:var(--low)}
 #ticker{position:fixed;left:0;right:0;bottom:0;z-index:6;padding:8px 16px;color:var(--dim);
   background:linear-gradient(transparent,#050507 50%);white-space:nowrap;overflow:hidden;font-size:11px}
 @media (max-width:700px){#feed{display:none}#nodes{top:112px}.stats{gap:14px}.stats b{font-size:16px}}
