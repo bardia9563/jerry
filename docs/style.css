@@ -1,6 +1,6 @@
 :root{--bg:#050507;--fg:#e9e6f2;--dim:#8a8698;--free:#59ffb0;--deal:#ff5fa8;--home:#ffffff;--low:#ffd166}
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;background:radial-gradient(ellipse 120% 80% at 50% 62%,#2a1a5e 0%,#160e36 40%,#0a0718 75%,#050507 100%) fixed var(--bg);color:var(--fg);overflow:hidden;
+html,body{height:100%;background:radial-gradient(ellipse 120% 80% at 50% 62%,#130c2b 0%,#0b081d 45%,#07060f 75%,#050507 100%) fixed var(--bg);color:var(--fg);overflow:hidden;
   font:12px/1.3 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
 header{position:fixed;top:0;left:0;right:0;padding:14px 16px;z-index:5;
   background:linear-gradient(#050507 60%,transparent)}
@@ -49,3 +49,14 @@ header{position:fixed;top:0;left:0;right:0;padding:14px 16px;z-index:5;
 #ticker{position:fixed;left:0;right:0;bottom:0;z-index:6;padding:8px 16px;color:var(--dim);
   background:linear-gradient(transparent,#050507 50%);white-space:nowrap;overflow:hidden;font-size:11px}
 @media (max-width:700px){#feed{display:none}#nodes{top:112px}.stats{gap:14px}.stats b{font-size:16px}}
+#feed{touch-action:pan-y}
+#pick{position:fixed;left:50%;bottom:64px;transform:translateX(-50%);z-index:8;display:none;width:min(360px,92vw);padding:10px 34px 10px 12px;
+  background:#0b0b10f0;border:1px solid #ffffff33;border-radius:8px}
+#pick.on{display:block}
+#pick small{display:block;color:var(--dim);margin-top:3px}
+#pick a{display:inline-block;margin-top:8px;padding:6px 10px;border:1px solid #ffffff55;border-radius:6px;color:var(--fg);text-decoration:none}
+#pick .x{position:absolute;right:8px;top:6px;cursor:pointer;color:var(--dim);padding:4px 6px}
+#pick.free b{color:var(--free)}#pick.deal b{color:var(--deal)}#pick.lowprof b{color:var(--low)}
+#listbtn{display:none;position:fixed;right:12px;bottom:42px;z-index:7;height:38px;padding:0 12px;border-radius:8px;
+  border:1px solid #ffffff33;background:#0b0b10e6;color:#e9e6f2;font:12px ui-monospace,monospace}
+@media (max-width:700px){#listbtn{display:block}body.showfeed #feed{display:block;left:12px;right:12px;width:auto;bottom:88px;max-height:50vh}}
