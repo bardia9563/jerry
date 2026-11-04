@@ -24,7 +24,15 @@ function ui() {
 
 async function poll() {
   let data = [];
-  try { data = await (await fetch('alerts.json?' + Date.now(), { cache: 'no-store' })).json(); } catch (e) {}
+  // GitHub API sees new alerts seconds after Jerry saves them (the website copy can lag a few minutes)
+  try {
+    const r = await fetch('https://api.github.com/repos/bardia9563/jerry/contents/docs/alerts.json?ref=main',
+      { cache: 'no-store', headers: { Accept: 'application/vnd.github.raw+json' } });
+    if (!r.ok) throw 0;
+    data = await r.json();
+  } catch (e) {
+    try { data = await (await fetch('alerts.json?' + Date.now(), { cache: 'no-store' })).json(); } catch (e2) {}
+  }
   data = data.filter(a => a.lat && Date.now() - a.t * 1000 < KEEP);
   if (data.length && !demo) {
     $('demo').hidden = true;
@@ -54,4 +62,5 @@ function startDemo() {
     const a = fake(); add(a, true); announce(a); if (sigs.length > 14) { sigs.shift().el.remove(); } ui(); }, 6000);
 }
 
-poll(); setInterval(poll, 60000);
+poll(); setInterval(poll, 70000);   // ~50 checks/hour, under GitHub's free limit of 60
+addEventListener('visibilitychange', () => { if (!document.hidden) poll(); });
