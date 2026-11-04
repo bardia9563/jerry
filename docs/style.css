@@ -69,3 +69,37 @@ header{position:fixed;top:0;left:0;right:0;padding:14px 16px;z-index:5;
 #pick button{padding:6px 10px;border:1px solid #ffffff44;border-radius:6px;background:#15151d;color:var(--fg);font:12px ui-monospace,monospace;cursor:pointer}
 #pick button.main{border-color:#1877f2;background:#1877f2;color:#fff;font-weight:700}
 #pick .hint{margin-top:8px;padding:8px;border-radius:6px;background:#1877f222;border:1px solid #1877f266;line-height:1.5}
+#feed li.filters{position:sticky;top:0;z-index:1;display:flex;flex-wrap:wrap;gap:6px;padding:6px 0;background:#050507f2;border-bottom:1px solid #ffffff22}
+#feed select{flex:1 1 30%;min-width:0;padding:6px;border-radius:6px;border:1px solid #ffffff33;background:#15151d;color:var(--fg);font:12px ui-monospace,monospace}
+#feed li.gone a{opacity:.5;text-decoration:line-through}
+#feed li.empty{border:0}
+#pick .pics{display:flex;gap:6px;overflow-x:auto;margin-top:8px;-webkit-touch-callout:default}
+#pick .pics img{height:84px;border-radius:6px;flex:none;-webkit-user-select:auto;user-select:auto}
+/* smooth, focused item card */
+#pick{display:block!important;visibility:hidden;opacity:0;pointer-events:none;
+  transform:translate(-50%,24px) scale(.96);transition:opacity .35s ease,transform .45s cubic-bezier(.2,.9,.25,1.15),visibility 0s .45s;
+  box-shadow:0 12px 50px #000c,0 0 0 1px #ffffff14;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+#pick.on{visibility:visible;opacity:1;pointer-events:auto;transform:translate(-50%,0) scale(1);transition:opacity .35s ease,transform .45s cubic-bezier(.2,.9,.25,1.15),visibility 0s}
+#pick.free{border-color:#59ffb066}#pick.deal{border-color:#ff5fa866}#pick.lowprof{border-color:#ffd16666}
+#pick > *{opacity:0;transform:translateY(6px);transition:opacity .3s ease,transform .3s ease}
+#pick.on > *{opacity:1;transform:none}
+#pick.on > :nth-child(2){transition-delay:.05s}#pick.on > :nth-child(3){transition-delay:.1s}#pick.on > :nth-child(4){transition-delay:.15s}
+#pick.on > :nth-child(5){transition-delay:.2s}#pick.on > :nth-child(n+6){transition-delay:.25s}
+#dim{position:fixed;inset:0;z-index:5;pointer-events:none;opacity:0;transition:opacity .5s ease;
+  background:radial-gradient(ellipse at 50% 40%,transparent 0,transparent 18%,#050507b0 70%)}
+#dim.on{opacity:1}
+.stats .earn{cursor:pointer}.stats .earn b{color:var(--free)}
+#earn-in{width:84px;font:700 18px ui-monospace,monospace;color:var(--free);background:#15151d;border:1px solid var(--free);border-radius:4px;padding:0 4px}
+.stats .earn span{white-space:nowrap;text-decoration:underline dotted}
+#bell{position:fixed;right:12px;top:14px;z-index:7;width:38px;height:38px;border-radius:50%;border:1px solid #ffffff33;background:#0b0b10e6;font-size:17px;cursor:pointer;filter:grayscale(1);opacity:.75}
+#bell.on{filter:none;opacity:1;border-color:var(--low);box-shadow:0 0 14px #ffd16655}
+#pushbox{position:fixed;left:50%;top:64px;transform:translateX(-50%);z-index:9;width:min(360px,92vw);padding:12px 34px 12px 12px;display:none;
+  background:#0b0b10f5;border:1px solid #ffffff33;border-radius:10px;box-shadow:0 12px 50px #000c}
+#pushbox.on{display:block}
+#pushbox small{display:block;color:var(--dim);margin-top:6px;line-height:1.5}
+#pushbox textarea{width:100%;height:84px;margin-top:8px;font:10px ui-monospace,monospace;background:#15151d;color:var(--fg);border:1px solid #ffffff33;border-radius:6px}
+#pushbox .row{margin-top:8px}#pushbox button{padding:6px 10px;border:1px solid #ffffff44;border-radius:6px;background:#15151d;color:var(--fg);font:12px ui-monospace,monospace}
+#pushbox .x{position:absolute;right:8px;top:6px;cursor:pointer;color:var(--dim);padding:4px 6px}
+/* busier ball = slightly brighter glow */
+.node i{box-shadow:0 0 calc(20px + 14px * var(--g, 0)) currentColor,inset 0 0 calc(16px + 8px * var(--g, 0)) currentColor;
+  filter:brightness(calc(.92 + .22 * var(--g, 0)));transition:box-shadow 1s ease,filter 1s ease}

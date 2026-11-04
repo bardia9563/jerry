@@ -63,5 +63,27 @@
     const p = [...ptrs.values()][0]; last = p ? { x: p.x, y: p.y } : null; };
   addEventListener('pointerup', up); addEventListener('pointercancel', up);
 
+  // smooth fly-to: zoom in on a point on the map and bring it to the upper middle of the screen
+  let anim = 0;
+  window.ZOOM = {
+    flyTo(el, zTarget = 2.4) {
+      cancelAnimationFrame(anim);
+      const z0 = z, t0 = performance.now(), D = 900;
+      const ease = t => 1 - Math.pow(1 - t, 3);
+      const step = now => {
+        const t = Math.min(1, (now - t0) / D), k = ease(t);
+        const p = MAP.screen(el);
+        const want = z0 + (Math.max(z0, zTarget) - z0) * k;
+        zoomBy(want / z, p.x, p.y);
+        const q = MAP.screen(el), gx = innerWidth / 2, gy = innerHeight * (innerWidth < 700 ? .34 : .42);
+        px += (gx - q.x) * .12 * (0.4 + k); py += (gy - q.y) * .12 * (0.4 + k); apply();
+        if (t < 1) anim = requestAnimationFrame(step);
+      };
+      anim = requestAnimationFrame(step);
+    },
+    stop() { cancelAnimationFrame(anim); },
+  };
+  addEventListener('pointerdown', () => cancelAnimationFrame(anim));
+
   apply();
 })();
