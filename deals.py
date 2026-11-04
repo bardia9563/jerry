@@ -3,6 +3,7 @@ import html
 import json
 import os
 import re
+import time
 
 import requests
 
@@ -15,10 +16,11 @@ MIN_PROFIT = 30          # dollars
 MIN_MARGIN = 0.25        # DEALS: profit also >= 25% of the buy price
 # LOWPROF (bot 3): $30+ profit but under 25% margin, e.g. buy $200 -> sell $230
 MIN_PRICE = 5            # skip $1 placeholder prices
-MAX_AI_ITEMS = 25        # per run, keeps AI cost low
+BATCH = 40               # listings per AI call
+MAX_AI_ITEMS = 200       # safety cap per run
 SEEN_FILE = "deals_seen.json"
 
-# Only check stuff that flips well (keeps AI cost low).
+# No longer used as a filter: the AI now checks every new listing.
 WATCH = [
     "ps5", "ps4", "playstation", "xbox", "nintendo", "switch", "steam deck",
     "iphone", "ipad", "macbook", "airpods", "apple watch", "imac",
@@ -61,13 +63,17 @@ Reply with ONLY a JSON array (empty [] if no good deals):
 
 def ai_check(items):
     lines = [json.dumps({"id": i["id"], "title": i["title"], "price": i["price"],
-                         "description": i["description"]}) for i in items]
+                         "description": (i["description"] or "")[:300]}) for i in items]
     body = {"model": valuer.pick_model(), "max_tokens": 2000,
             "messages": [{"role": "user", "content": PROMPT.format(
                 min_profit=MIN_PROFIT,
                 items="\n".join(lines))}]}
-    r = requests.post(f"{valuer.API}/messages", headers=valuer._headers(),
-                      json=body, timeout=90)
+    for attempt in range(3):                       # retry if the AI is briefly down
+        r = requests.post(f"{valuer.API}/messages", headers=valuer._headers(),
+                          json=body, timeout=90)
+        if r.status_code < 500 and r.status_code != 429:
+            break
+        time.sleep(5 * (attempt + 1))
     r.raise_for_status()
     text = "".join(b.get("text", "") for b in r.json()["content"])
     m = re.search(r"\[.*\]", text, re.S)
@@ -125,7 +131,7 @@ def run(chat_id):
         seen.append(it["id"])
         seen_set.add(it["id"])
         text = (it["title"] + " " + it["description"]).lower()
-        if (it["price"] >= MIN_PRICE and _has(WATCH, text)
+        if (it["price"] >= MIN_PRICE
                 and not _has(SKIP, text) and not PHONE_RE.search(it["title"])):
             new.append(it)
     save_seen(seen)
@@ -133,12 +139,18 @@ def run(chat_id):
     if first_run:
         print("[deals] first run: remembered current listings, no alerts.")
         return
-    print(f"[deals] {len(new)} new watchlist item(s) to check")
+    print(f"[deals] {len(new)} new listing(s) for the AI to check")
     if not new:
         return
 
     by_id = {it["id"]: it for it in new}
-    deals = ai_check(new[:MAX_AI_ITEMS])
+    deals = []
+    todo = new[:MAX_AI_ITEMS]
+    for i in range(0, len(todo), BATCH):
+        try:
+            deals += ai_check(todo[i:i + BATCH])
+        except Exception as e:
+            print(f"[deals] AI batch failed: {e}")
     for d in deals:
         it = by_id.get(d.get("id"))
         if not it or not d.get("value"):
