@@ -53,6 +53,9 @@ like a scam, broken, an accessory/box only, a store/dealer ad, or too vague.
 
 For each good deal, also write a resale listing. The seller is in Downtown Toronto:
 end the listing description with "Pickup in Downtown Toronto."
+Only describe the item itself (brand, model, condition, what is included). Never write
+things like "message for more photos", "message for dimensions", "DM for details",
+"ask for more info" or any other call to message; no emojis, no hashtags.
 
 Listings:
 {items}
