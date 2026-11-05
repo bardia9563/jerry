@@ -154,3 +154,9 @@ body.picking #lbar{opacity:0;pointer-events:none;transform:translateY(12px)}
 #feed .chk{position:absolute;right:0;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;
   border:1px solid #ffffff44;background:#15151d;color:#ffffff55;font:700 15px ui-monospace,monospace;cursor:pointer}
 #feed .chk.on{border-color:var(--listed);background:#4da3ff22;color:var(--listed)}
+/* ✕ not interested: sinks to the bottom, red */
+#feed li[data-k]{padding-right:78px}
+#feed .xbtn{position:absolute;right:38px;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;
+  border:1px solid #ffffff44;background:#15151d;color:#ffffff55;font:700 14px ui-monospace,monospace;cursor:pointer}
+#feed .xbtn.on{border-color:#ff5b5b;background:#ff5b5b22;color:#ff5b5b}
+#feed li.skipped > a,#feed li.skipped > small{opacity:.4}
