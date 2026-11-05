@@ -17,8 +17,9 @@ function ui() {
   $('s-deal').textContent = $('c-deal').textContent = d.length - lo.length;
   $('s-low').textContent = $('c-low').textContent = lo.length;
   // the more live lines a ball has, the brighter it glows (gently: 0 lines = normal, 12+ = max)
-  const live = k => real.filter(a => a.kind === k && !a.gone).length;
-  for (const [k, id] of [['free', 'n-free'], ['deal', 'n-deal'], ['lowprof', 'n-low']])
+  const live = k => real.filter(a => kindOf(a) === k && !a.gone).length;
+  $('c-listed').textContent = real.filter(a => kindOf(a) === 'listed').length;
+  for (const [k, id] of [['free', 'n-free'], ['deal', 'n-deal'], ['lowprof', 'n-low'], ['listed', 'n-listed']])
     $(id).style.setProperty('--g', Math.min(1, live(k) / 12).toFixed(2));
   $('s-profit').textContent = '$' + Math.round(f.reduce((x, a) => x + (+a.value || 0), 0) + d.reduce((x, a) => x + (a.value - a.price || 0), 0));
   const last = real.slice().sort((x, y) => y.t - x.t);
@@ -71,7 +72,7 @@ function startDemo() {
 }
 
 // ---- list with filters: price range + sort (newest / highest ROI / most profit) ----
-let FPRICE = 'any', FSORT = 'new', FDIST = 'any';
+let FPRICE = 'any', FSORT = 'new', FDIST = 'any', FVIEW = 'all';   // FVIEW: 'all' = still to list, 'listed' = already listed
 // distance from home (81 Navy Wharf Crt) + a rough TTC time: ~10 min walking/waiting + ~3 min per km
 const HOME_LL = [43.64139, -79.39147];
 window.kmOf = a => { if (!a.lat) return null; const R = 6371, r = Math.PI / 180, dLa = (a.lat - HOME_LL[0]) * r, dLo = (a.lon - HOME_LL[1]) * r;
@@ -90,16 +91,28 @@ function renderFeed(real) {
   const [, lo, hi] = PRICES[FPRICE];
   const maxKm = DISTS[FDIST][1];
   let list = real.filter(a => (+a.price || 0) >= lo && (+a.price || 0) <= hi && (kmOf(a) ?? 0) <= maxKm);
+  // the map's lines follow the filters too (they fade in/out smoothly in app.js)
+  window.FMATCH = (FPRICE === 'any' && FDIST === 'any') ? null : new Set(list);
   if (FSORT === 'new') list.sort((x, y) => y.t - x.t);
   if (FSORT === 'roi') list.sort((x, y) => roiOf(y) - roiOf(x) || y.t - x.t);
   if (FSORT === 'profit') list.sort((x, y) => profitOf(y) - profitOf(x) || y.t - x.t);
   if (FSORT === 'near') list.sort((x, y) => (kmOf(x) ?? 1e9) - (kmOf(y) ?? 1e9));
+  const nListed = list.filter(a => kindOf(a) === 'listed').length;
+  list = list.filter(a => (kindOf(a) === 'listed') === (FVIEW === 'listed'));
   FEEDLIST = list.slice(0, 40);
   const opt = (o, cur) => Object.entries(o).map(([k, v]) => `<option value="${k}"${k === cur ? ' selected' : ''}>${Array.isArray(v) ? v[0] : v}</option>`).join('');
-  $('feed').innerHTML = `<li class="filters"><select id="f-price">${opt(PRICES, FPRICE)}</select><select id="f-dist">${opt(DISTS, FDIST)}</select><select id="f-sort">${opt(SORTS, FSORT)}</select></li>` +
-    (FEEDLIST.length ? FEEDLIST.map((a, k) => `<li class="${a.kind}${a.gone ? ' gone' : ''}" data-k="${k}"><a href="${esc(a.url)}" target="_blank" rel="noopener"><b>${LBL[a.kind] || 'DEAL'}</b> ${esc(a.title)}</a><small>${esc(money(a))} · ${roiTxt(a)}${a.gone ? ' · SOLD' : ''}</small><small>📍 ${esc(a.where)}${kmOf(a) != null ? ' · ' + tripTxt(a) : ''}</small></li>`).join('')
-      : '<li class="empty"><small>nothing matches these filters yet</small></li>');
+  $('feed').innerHTML = `<li class="tabs"><button data-view="all" class="${FVIEW === 'all' ? 'on' : ''}">To list</button><button data-view="listed" class="${FVIEW === 'listed' ? 'on' : ''}">📌 Listed (${nListed})</button></li><li class="filters"><select id="f-price">${opt(PRICES, FPRICE)}</select><select id="f-dist">${opt(DISTS, FDIST)}</select><select id="f-sort">${opt(SORTS, FSORT)}</select></li>` +
+    (FEEDLIST.length ? FEEDLIST.map((a, k) => `<li class="${a.kind}${a.gone ? ' gone' : ''}" data-k="${k}"><button class="chk${kindOf(a) === 'listed' ? ' on' : ''}" title="Mark as listed">✓</button><a href="${esc(a.url)}" target="_blank" rel="noopener"><b>${LBL[a.kind] || 'DEAL'}</b>${kindOf(a) === 'listed' ? ' <i class="lt">📌 LISTED</i>' : ''} ${esc(a.title)}</a><small>${esc(money(a))} · ${roiTxt(a)}${a.gone ? ' · SOLD' : ''}</small><small>📍 ${esc(a.where)}${kmOf(a) != null ? ' · ' + tripTxt(a) : ''}</small></li>`).join('')
+      : `<li class="empty"><small>${FVIEW === 'listed' ? 'Nothing listed yet. Tap ✓ on an item once you have posted it.' : 'nothing matches these filters yet'}</small></li>`);
 }
+// ✓ on a row moves it to / from Listed; tabs switch between To list and Listed
+$('feed').addEventListener('click', e => {
+  const tab = e.target.closest('.tabs button');
+  if (tab) { FVIEW = tab.dataset.view; renderFeed(sigs.map(s => s.a)); return; }
+  const chk = e.target.closest('.chk');
+  if (chk) { e.preventDefault(); e.stopPropagation(); const li = chk.closest('li[data-k]'), a = FEEDLIST[+li.dataset.k];
+    if (!a) return; li.classList.add('moving'); setTimeout(() => toggleListed(a), 280); }
+});
 // quick sort buttons next to ☰ LIST use this
 window.setSort = v => { FSORT = v; renderFeed(sigs.map(s => s.a)); document.querySelectorAll('#lbar [data-sort]').forEach(b => b.classList.toggle('on', b.dataset.sort === FSORT)); };
 $('feed').addEventListener('change', e => {
@@ -115,6 +128,7 @@ $('feed').addEventListener('change', e => {
   let val = 0; try { val = +localStorage.getItem(KEY) || 0; } catch (e) {}
   const show = () => { out.textContent = (val < 0 ? '-$' : '$') + Math.abs(Math.round(val)).toLocaleString(); out.style.color = val < 0 ? '#ff6b6b' : ''; };
   show();
+  addEventListener('jerry-earned', () => { try { val = +localStorage.getItem(KEY) || 0; } catch (e) {} show(); });
   box.addEventListener('click', () => {
     if (box.querySelector('input')) return;
     const inp = document.createElement('input');

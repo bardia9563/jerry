@@ -56,7 +56,7 @@
       (L ? `<div class="lst"><div class="lt">${esc(L.title)}</div><div class="lp">List for $${sell}</div><div class="ld">${esc(L.description)}</div></div>
             <div class="row"><button data-a="title">Title</button><button data-a="price">Price</button><button data-a="desc">Description</button></div>
             <div class="row"><button data-a="fb" class="main">Open Facebook ↗</button></div><div class="hint fb-hint" hidden>In Facebook tap <b>Marketplace → Sell → Item for sale</b>, add photos, then use <b>Title / Price / Description</b> here to copy each part.</div>` : '') +
-      `<div class="row">` +
+      `<div class="row"><button data-a="listed" class="lbtn">${window.kindOf && kindOf(a) === 'listed' ? '📌 Listed ✓ (undo)' : '📌 Mark as listed'}</button><button data-a="track">💬 Track</button>` +
       (a.url && a.url !== '#' ? `<a href="${esc(a.url.startsWith('/') ? 'https://www.kijiji.ca' + a.url : a.url)}" target="_blank" rel="noopener">Open original ↗</a>` : '') +
       (a.lat ? `<a href="https://maps.apple.com/?daddr=${a.lat},${a.lon}&dirflg=d" target="_blank" rel="noopener">🧭 Directions</a>` : '') +
       `</div>` +
@@ -71,6 +71,10 @@
     if (t.classList.contains('x')) { close(); return; }
     const act = t.dataset && t.dataset.a, L = cur && cur.listing;
     if (act === 'pics') { savePics(cur.images || [], t); return; }
+    if (act === 'listed') {
+      t.textContent = toggleListed(cur) ? '📌 Listed ✓ (undo)' : '📌 Mark as listed'; return;
+    }
+    if (act === 'track') { if (window.trackItem) { trackItem(cur); close(); } return; }
     if (!act || !L) return;
     const sell = String(Math.round(+L.price || +cur.value || 0));
     const all = `${L.title}\n\n$${sell}\n\n${L.description}`;
@@ -82,6 +86,7 @@
 
   // tapping an item in the list opens its card instead of leaving the page
   document.getElementById('feed').addEventListener('click', e => {
+    if (e.target.closest('.chk, .tabs')) return;          // the ✓ button and tabs are handled in feed.js
     const li = e.target.closest('li[data-k]'); if (!li) return;
     const a = (window.FEEDLIST || [])[+li.dataset.k];
     if (a) { e.preventDefault(); show(a); }
@@ -94,7 +99,7 @@
     if (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 8) return;
     if (e.target.closest('button,a,#feed,#pick')) return;
     let best = null, bd = innerWidth < 700 ? 34 : 22;
-    for (const s of sigs) { if (s.a.gone && performance.now() - (s.goneAt || 0) > 3000) continue; const p = MAP.screen(s.el), d = Math.hypot(p.x - e.clientX, p.y - e.clientY); if (d < bd) { bd = d; best = s; } }
+    for (const s of sigs) { if ((s.a.gone && performance.now() - (s.goneAt || 0) > 3000) || (s.vis != null && s.vis < .5)) continue; const p = MAP.screen(s.el), d = Math.hypot(p.x - e.clientX, p.y - e.clientY); if (d < bd) { bd = d; best = s; } }
     if (best) show(best.a); else if (pick.classList.contains('on')) close();
   });
 })();
