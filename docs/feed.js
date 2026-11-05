@@ -11,7 +11,8 @@ function announce(a) {
 
 function ui() {
   const real = sigs.map(s => s.a), day = new Date().setHours(0, 0, 0, 0);
-  const f = real.filter(a => a.kind === 'free'), d = real.filter(a => a.kind !== 'free'), lo = real.filter(a => a.kind === 'lowprof');
+  const vis = real.filter(a => kindOf(a) !== 'listed');      // listed items only count on the blue ball
+  const f = vis.filter(a => a.kind === 'free'), d = vis.filter(a => a.kind !== 'free'), lo = vis.filter(a => a.kind === 'lowprof');
   $('s-today').textContent = real.filter(a => a.t * 1000 >= day).length;
   $('s-free').textContent = $('c-free').textContent = f.length;
   $('s-deal').textContent = $('c-deal').textContent = d.length - lo.length;
@@ -72,6 +73,9 @@ function startDemo() {
 }
 
 // ---- list with filters: price range + sort (newest / highest ROI / most profit) ----
+// ✕ = not interested: moves the item to the bottom of the list (saved on this phone)
+window.SKIP = new Set((() => { try { return JSON.parse(localStorage.getItem('jerry-skip')) || []; } catch (e) { return []; } })());
+const skipKey = a => a.url || a.title;
 let FPRICE = 'any', FSORT = 'new', FDIST = 'any', FVIEW = 'all';   // FVIEW: 'all' = still to list, 'listed' = already listed
 // distance from home (81 Navy Wharf Crt) + a rough TTC time: ~10 min walking/waiting + ~3 min per km
 const HOME_LL = [43.64139, -79.39147];
@@ -97,18 +101,24 @@ function renderFeed(real) {
   if (FSORT === 'roi') list.sort((x, y) => roiOf(y) - roiOf(x) || y.t - x.t);
   if (FSORT === 'profit') list.sort((x, y) => profitOf(y) - profitOf(x) || y.t - x.t);
   if (FSORT === 'near') list.sort((x, y) => (kmOf(x) ?? 1e9) - (kmOf(y) ?? 1e9));
+  list.sort((x, y) => SKIP.has(skipKey(x)) - SKIP.has(skipKey(y)));   // skipped ones sink to the bottom
   const nListed = list.filter(a => kindOf(a) === 'listed').length;
   list = list.filter(a => (kindOf(a) === 'listed') === (FVIEW === 'listed'));
   FEEDLIST = list.slice(0, 40);
   const opt = (o, cur) => Object.entries(o).map(([k, v]) => `<option value="${k}"${k === cur ? ' selected' : ''}>${Array.isArray(v) ? v[0] : v}</option>`).join('');
   $('feed').innerHTML = `<li class="tabs"><button data-view="all" class="${FVIEW === 'all' ? 'on' : ''}">To list</button><button data-view="listed" class="${FVIEW === 'listed' ? 'on' : ''}">📌 Listed (${nListed})</button></li><li class="filters"><select id="f-price">${opt(PRICES, FPRICE)}</select><select id="f-dist">${opt(DISTS, FDIST)}</select><select id="f-sort">${opt(SORTS, FSORT)}</select></li>` +
-    (FEEDLIST.length ? FEEDLIST.map((a, k) => `<li class="${a.kind}${a.gone ? ' gone' : ''}" data-k="${k}"><button class="chk${kindOf(a) === 'listed' ? ' on' : ''}" title="Mark as listed">✓</button><a href="${esc(a.url)}" target="_blank" rel="noopener"><b>${LBL[a.kind] || 'DEAL'}</b>${kindOf(a) === 'listed' ? ' <i class="lt">📌 LISTED</i>' : ''} ${esc(a.title)}</a><small>${esc(money(a))} · ${roiTxt(a)}${a.gone ? ' · SOLD' : ''}</small><small>📍 ${esc(a.where)}${kmOf(a) != null ? ' · ' + tripTxt(a) : ''}</small></li>`).join('')
+    (FEEDLIST.length ? FEEDLIST.map((a, k) => `<li class="${a.kind}${a.gone ? ' gone' : ''}${SKIP.has(skipKey(a)) ? ' skipped' : ''}" data-k="${k}"><button class="xbtn${SKIP.has(skipKey(a)) ? ' on' : ''}" title="Not interested">✕</button><button class="chk${kindOf(a) === 'listed' ? ' on' : ''}" title="Mark as listed">✓</button><a href="${esc(a.url)}" target="_blank" rel="noopener"><b>${LBL[a.kind] || 'DEAL'}</b>${kindOf(a) === 'listed' ? ' <i class="lt">📌 LISTED</i>' : ''} ${esc(a.title)}</a><small>${esc(money(a))} · ${roiTxt(a)}${a.gone ? ' · SOLD' : ''}</small><small>📍 ${esc(a.where)}${kmOf(a) != null ? ' · ' + tripTxt(a) : ''}</small></li>`).join('')
       : `<li class="empty"><small>${FVIEW === 'listed' ? 'Nothing listed yet. Tap ✓ on an item once you have posted it.' : 'nothing matches these filters yet'}</small></li>`);
 }
 // ✓ on a row moves it to / from Listed; tabs switch between To list and Listed
 $('feed').addEventListener('click', e => {
   const tab = e.target.closest('.tabs button');
   if (tab) { FVIEW = tab.dataset.view; renderFeed(sigs.map(s => s.a)); return; }
+  const xb = e.target.closest('.xbtn');
+  if (xb) { e.preventDefault(); e.stopPropagation(); const li = xb.closest('li[data-k]'), a = FEEDLIST[+li.dataset.k]; if (!a) return;
+    const k = skipKey(a); SKIP.has(k) ? SKIP.delete(k) : SKIP.add(k);
+    try { localStorage.setItem('jerry-skip', JSON.stringify([...SKIP])); } catch (x) {}
+    li.classList.add('moving'); setTimeout(() => renderFeed(sigs.map(s => s.a)), 280); return; }
   const chk = e.target.closest('.chk');
   if (chk) { e.preventDefault(); e.stopPropagation(); const li = chk.closest('li[data-k]'), a = FEEDLIST[+li.dataset.k];
     if (!a) return; li.classList.add('moving'); setTimeout(() => toggleListed(a), 280); }
