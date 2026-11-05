@@ -86,7 +86,7 @@
 
   // tapping an item in the list opens its card instead of leaving the page
   document.getElementById('feed').addEventListener('click', e => {
-    if (e.target.closest('.chk, .tabs')) return;          // the ✓ button and tabs are handled in feed.js
+    if (e.target.closest('.chk, .xbtn, .tabs')) return;          // the ✓ button and tabs are handled in feed.js
     const li = e.target.closest('li[data-k]'); if (!li) return;
     const a = (window.FEEDLIST || [])[+li.dataset.k];
     if (a) { e.preventDefault(); show(a); }
